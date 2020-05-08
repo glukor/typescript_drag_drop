@@ -14,10 +14,14 @@ class Project {
 }
 
 
-// Project State Management
+
+
+// =================== SECTION Project State Management ===================
 
 type Listener<T> = (items: T[]) => void;
 
+
+// ========== State Class ==========
 class State<T> {
     protected listeners: Listener<T>[] = [];
 
@@ -26,6 +30,8 @@ class State<T> {
     }
 }
 
+
+// ========== ProjectState Class ==========
 class ProjectState extends State<Project>{
     private projects: Project[] = [];
     private static instance: ProjectState;
@@ -105,7 +111,13 @@ function autobind(_: any, _2: string, descriptor: PropertyDescriptor) {
     return adjDescriptor;
 }
 
-// Component Base Class
+
+
+
+// =================== SECTION Project List and Items Management ===================
+
+
+// ========== Component Base Class ==========
 abstract class Component<T extends HTMLElement, U extends HTMLElement> {
     templateElement: HTMLTemplateElement;
     hostElement: T;
@@ -132,7 +144,32 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
     abstract renderContent(): void;
 }
 
-// ProjectList Class
+
+// ========== ProjectItem Class ==========
+class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
+    private project: Project;
+
+
+    constructor(hostId: string, project: Project) {
+        super('single-project', hostId, false, project.id);
+        this.project = project;
+
+        this.configure();
+        this.renderContent();
+    }
+
+    configure(){};
+
+    renderContent(){
+        this.element.querySelector('h2')!.textContent = this.project.title;
+        this.element.querySelector('h3')!.textContent = this.project.people.toString();
+        this.element.querySelector('p')!.textContent = this.project.description;
+    };
+}
+
+
+
+// ========== ProjectList Class ==========
 class ProjectList extends Component<HTMLDivElement, HTMLElement> {
     assignedProject: Project[];
 
@@ -167,15 +204,13 @@ class ProjectList extends Component<HTMLDivElement, HTMLElement> {
         const listEl = document.getElementById(`${this.type}-projects-list`)! as HTMLUListElement;
         listEl.innerHTML = '';
         for (const prjItem of this.assignedProject) {
-            const listItem = document.createElement('li');
-            listItem.textContent = prjItem.title;
-            listEl.appendChild(listItem)
+            new ProjectItem(this.element.querySelector('ul')!.id, prjItem);
         }
     }
 }
 
 
-// project input class
+// ========== Project Input Class ==========
 class ProjectInput extends Component<HTMLDivElement, HTMLFormElement> {
     titleInputElement: HTMLInputElement;
     descriptionInputElement: HTMLInputElement;
